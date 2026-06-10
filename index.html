@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon-32x32.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <title>A2 Forum - Diễn đàn học tập trực tuyến</title>
+  </head>
+  <body class="bg-light text-dark dark:bg-dark dark:text-light">
+    <div class="select-none" id="app">
+      <!-- 2 CIRLCES -->
+      <div class="fixed bottom-[5%] right-[2%]">
+        <div
+          class="flex justify-center items-center bg-accent/20 rounded-full w-15 h-15 m-1"
+        >
+          <a href="https://www.zalo.me/0395808431" target="_blank">
+            <img class="w-10 h-10" src="zalo.png" alt="" />
+          </a>
+        </div>
+        <div
+          class="flex justify-center items-center bg-accent/20 rounded-full w-15 h-15 m-1"
+        >
+          <a href="https://www.m.me/dev2k10" target="_blank">
+            <img class="w-8 h-8" src="messenger.webp" alt="" />
+          </a>
+        </div>
+      </div>
+      <!-- MENU POPUP -->
+      <div
+        id="menuOverlay"
+        class="lg:hidden fixed font-display inset-0 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none z-50"
+      >
+        <div
+          class="absolute inset-0 bg-black/80 bg-opacity-50 transition-opacity duration-300"
+          aria-hidden="true"
+        ></div>
+
+        <div
+          class="absolute left-0 right-0 bottom-0 bg-light dark:bg-dark border-t w-full h-[50%] transition-transform duration-300 ease-in-out transform translate-y-full opacity-0"
+          id="menuContent"
+        >
+          <div class="absolute top-0 left-0 bottom-20 right-0">
+            <div class="flex justify-between p-4">
+              <div class="text-2xl">Góc học tập</div>
+              <button id="closeMenu" class="hover:text-accent">
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+            </div>
+
+            <ul class="flex flex-col gap-y-8 px-4 py-6">
+              <li
+                class="p-1 transition duration-200 ease-in-out border-b border-b-dark/10 dark:border-b-light/10 hover:text-accent"
+              >
+                <a class="block" href="/thong-bao">Thông báo</a>
+              </li>
+              <li
+                class="p-1 transition duration-200 ease-in-out border-b border-b-dark/10 dark:border-b-light/10 hover:text-accent"
+              >
+                <a class="block" href="/dien-dan">Diễn đàn</a>
+              </li>
+              <li
+                class="p-1 transition duration-200 ease-in-out border-b border-b-dark/10 dark:border-b-light/10 hover:text-accent"
+              >
+                <a class="block" href="/kien-thuc">Kiến thức</a>
+              </li>
+            </ul>
+          </div>
+          <div class="absolute bottom-1 right-1 h-10 pr-4">
+            <a
+              class="hover:text-blue-600 text-2xl"
+              target="_blank"
+              href="https://www.fb.com/doantruongthptnguyentatthanh"
+            >
+              <i class="fa-brands fa-facebook"></i>
+            </a>
+            <a
+              class="hover:text-red-600 text-2xl"
+              target="_blank"
+              href="mailto:lktin.dev@gmail.com"
+            >
+              <i class="fa-solid fa-envelope"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <nav class="font-display border-b">
+        <div class="flex items-center justify-between lg:justify-around m-5">
+          <div id="openMenu" class="lg:hidden">
+            <i class="fa-solid fa-bars"></i>
+          </div>
+          <div class="">
+            <span
+              class="bg-linear-65 from-accent/80 to-accent/40 font-black rounded-md py-1 px-2"
+              >A2</span
+            >
+            Forum
+          </div>
+          <ul class="hidden lg:flex gap-x-4">
+            <li
+              class="p-1 transition duration-200 ease-in-out hover:text-accent"
+            >
+              <a href="/thong-bao">Thông báo</a>
+            </li>
+            <li
+              class="p-1 transition duration-200 ease-in-out hover:text-accent"
+            >
+              <a href="/dien-dan">Diễn đàn</a>
+            </li>
+            <li
+              class="p-1 transition duration-200 ease-in-out hover:text-accent"
+            >
+              <a href="/kien-thuc">Kiến thức</a>
+            </li>
+          </ul>
+          <div class="flex items-center gap-x-2">
+            <a
+              class="hidden lg:block hover:text-blue-600"
+              target="_blank"
+              href="https://www.fb.com/doantruongthptnguyentatthanh"
+            >
+              <i class="fa-brands fa-facebook"></i>
+            </a>
+            <a
+              class="hidden lg:block hover:text-red-600"
+              target="_blank"
+              href="mailto:lktin.dev@gmail.com"
+            >
+              <i class="fa-solid fa-envelope"></i>
+            </a>
+            <div
+              class="flex justify-center items-center bg-accent hover:bg-accent/80 rounded-full w-8 h-8"
+            >
+              <a href="">
+                <i class="fa-solid fa-user"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <main></main>
+      <footer></footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

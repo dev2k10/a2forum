@@ -1,0 +1,12 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap");
+@import "tailwindcss";
+
+:root {
+}
+
+@theme {
+  --color-light: #ffffff;
+  --color-dark: #0a0a0a;
+  --color-accent: var(--color-blue-600);
+  --font-display: "Space Grotesk", sans-serif;
+}
