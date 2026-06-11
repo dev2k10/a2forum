@@ -3,8 +3,10 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 export default async (req: VercelRequest, res: VercelResponse) => {
   try {
     const { PrismaClient } = await import("@prisma/client");
+    const { PrismaPg } = await import("@prisma/adapter-pg");
     const url = process.env.DATABASE_URL;
-    const prisma = new PrismaClient({ accelerateUrl: url, log: ["query"] });
+    const adapter = new PrismaPg({ connectionString: url });
+    const prisma = new PrismaClient({ adapter, log: ["error"] });
     await prisma.$connect();
     const r = await prisma.$queryRaw`SELECT 1 as val`;
     await prisma.$disconnect();
