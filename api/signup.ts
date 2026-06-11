@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import bcrypt from "bcryptjs";
-import prisma from "../lib/db";
+import { getPrisma } from "../lib/db";
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
@@ -11,44 +11,34 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
   if (!name || !email || !password || !code) {
     return res.status(400).json({
-      error:
-        "Vui lòng điền đầy đủ thông tin: họ tên, email, mật khẩu và mã xác nhận",
+      error: "Vui lòng điền đầy đủ thông tin",
     });
   }
 
   try {
-    // Check if email already exists
+    const prisma = await getPrisma();
+
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return res.status(409).json({ error: "Email này đã được đăng ký" });
     }
 
-    // Verify the code
     const verificationCode = await prisma.verificationCode.findFirst({
       where: { email, used: false },
       orderBy: { createdAt: "desc" },
     });
 
     if (!verificationCode) {
-      return res.status(400).json({
-        error: "Chưa có mã xác nhận. Vui lòng gửi mã trước.",
-      });
+      return res.status(400).json({ error: "Chưa có mã xác nhận." });
     }
-
     if (verificationCode.code !== code) {
       return res.status(400).json({ error: "Mã xác nhận không đúng" });
     }
-
     if (verificationCode.expiresAt < new Date()) {
-      return res.status(400).json({
-        error: "Mã xác nhận đã hết hạn. Vui lòng gửi lại mã mới.",
-      });
+      return res.status(400).json({ error: "Mã xác nhận đã hết hạn." });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
     const user = await prisma.user.create({
       data: {
         name,
@@ -59,7 +49,6 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       },
     });
 
-    // Mark code as used
     await prisma.verificationCode.updateMany({
       where: { email, used: false },
       data: { used: true },
@@ -67,17 +56,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
     return res.status(201).json({
       success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
+      user: { id: user.id, name: user.name, email: user.email },
       message: "Đăng ký thành công!",
     });
   } catch (error: any) {
     console.error("Signup error:", error.message);
-    return res
-      .status(500)
-      .json({ error: "Đăng ký thất bại. Vui lòng thử lại sau." });
+    return res.status(500).json({ error: "Đăng ký thất bại." });
   }
 };

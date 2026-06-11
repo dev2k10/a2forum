@@ -1,20 +1,24 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
-const url =
-  process.env.DATABASE_URL ||
-  process.env.POSTGRES_URL_NON_POOLING ||
-  process.env.POSTGRES_URL;
+export const prisma = globalForPrisma.prisma ?? ({} as PrismaClient);
 
-function createPrismaClient() {
+// Lazy init with adapter (avoids module-level crash on Vercel)
+export async function getPrisma() {
+  if (globalForPrisma.prisma) return globalForPrisma.prisma;
+
+  const { PrismaPg } = await import("@prisma/adapter-pg");
+  const url =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.POSTGRES_URL;
+
   const adapter = new PrismaPg({ connectionString: url });
-  return new PrismaClient({ adapter, log: ["error"] });
+  const client = new PrismaClient({ adapter, log: ["error"] });
+
+  globalForPrisma.prisma = client;
+  return client;
 }
-
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 export default prisma;

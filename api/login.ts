@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import bcrypt from "bcryptjs";
-import prisma from "../lib/db";
+import { getPrisma } from "../lib/db";
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
@@ -8,12 +8,12 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   const { email, password } = req.body;
-
   if (!email || !password) {
     return res.status(400).json({ error: "Vui lòng nhập email và mật khẩu" });
   }
 
   try {
+    const prisma = await getPrisma();
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
@@ -36,8 +36,6 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     });
   } catch (error: any) {
     console.error("Login error:", error.message);
-    return res
-      .status(500)
-      .json({ error: "Đăng nhập thất bại. Vui lòng thử lại sau." });
+    return res.status(500).json({ error: "Đăng nhập thất bại." });
   }
 };
