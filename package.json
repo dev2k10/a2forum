@@ -9,11 +9,15 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@vercel/node": "^5.8.15",
     "typescript": "~6.0.2",
     "vite": "^8.0.16"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
+    "bcryptjs": "^3.0.3",
+    "postgres": "^3.4.9",
+    "resend": "^6.12.4",
     "tailwindcss": "^4.3.0"
   }
 }
