@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { query } from "./_db";
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   try {
-    const { query } = await import("./_db");
     // Test table exists
     const tables = await query(
       "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'",

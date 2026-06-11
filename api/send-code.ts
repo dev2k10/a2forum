@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { query } from "./_db";
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
@@ -16,11 +17,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   try {
-    const [{ query }, { Resend }] = await Promise.all([
-      import("./_db"),
-      import("resend"),
-    ]);
-
+    const { Resend } = await import("resend");
     const resend = new Resend(key);
 
     await query(
@@ -40,7 +37,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       from: "A2 Forum <no-reply@a2forum.vercel.app>",
       to: email,
       subject: "Mã xác nhận A2 Forum",
-      html: `<div style="font-family:Arial,sans-serif;max-width:400px;"><h2>Xác nhận đăng ký</h2><p>Mã của bạn:</p><div style="font-size:32px;font-weight:bold;text-align:center;padding:20px;background:#f0f0f0;border-radius:8px;letter-spacing:8px;">${code}</div><p>Hiệu lực 10 phút.</p></div>`,
+      html: `<div>Mã: <b>${code}</b></div>`,
     });
 
     return res.status(200).json({ success: true, message: "Mã đã gửi" });
