@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import bcrypt from "bcryptjs";
-import { getPrisma } from "../lib/db";
+import { query } from "../lib/db";
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
@@ -8,59 +8,49 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   const { name, email, password, dateOfBirth, code } = req.body;
-
   if (!name || !email || !password || !code) {
-    return res.status(400).json({
-      error: "Vui lòng điền đầy đủ thông tin",
-    });
+    return res.status(400).json({ error: "Missing required fields" });
   }
 
   try {
-    const prisma = await getPrisma();
-
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return res.status(409).json({ error: "Email này đã được đăng ký" });
+    const existing = await query("SELECT id FROM users WHERE email = $1", [
+      email,
+    ]);
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ error: "Email exists" });
     }
 
-    const verificationCode = await prisma.verificationCode.findFirst({
-      where: { email, used: false },
-      orderBy: { createdAt: "desc" },
-    });
+    const codes = await query(
+      "SELECT code, expires_at FROM verification_codes WHERE email = $1 AND used = FALSE ORDER BY created_at DESC LIMIT 1",
+      [email],
+    );
 
-    if (!verificationCode) {
-      return res.status(400).json({ error: "Chưa có mã xác nhận." });
-    }
-    if (verificationCode.code !== code) {
-      return res.status(400).json({ error: "Mã xác nhận không đúng" });
-    }
-    if (verificationCode.expiresAt < new Date()) {
-      return res.status(400).json({ error: "Mã xác nhận đã hết hạn." });
+    if (codes.rows.length === 0) {
+      return res.status(400).json({ error: "No verification code found" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-        verified: true,
-      },
-    });
+    const record = codes.rows[0];
+    if (record.code !== code) {
+      return res.status(400).json({ error: "Wrong code" });
+    }
+    if (new Date(record.expires_at) < new Date()) {
+      return res.status(400).json({ error: "Code expired" });
+    }
 
-    await prisma.verificationCode.updateMany({
-      where: { email, used: false },
-      data: { used: true },
-    });
+    const hashed = await bcrypt.hash(password, 10);
+    await query(
+      "INSERT INTO users (name, email, password, date_of_birth, verified) VALUES ($1, $2, $3, $4, TRUE)",
+      [name, email, hashed, dateOfBirth || null],
+    );
 
-    return res.status(201).json({
-      success: true,
-      user: { id: user.id, name: user.name, email: user.email },
-      message: "Đăng ký thành công!",
-    });
+    await query(
+      "UPDATE verification_codes SET used = TRUE WHERE email = $1 AND used = FALSE",
+      [email],
+    );
+
+    return res.status(201).json({ success: true, message: "Signup OK" });
   } catch (error: any) {
-    console.error("Signup error:", error.message);
-    return res.status(500).json({ error: "Đăng ký thất bại." });
+    console.error("Signup:", error.message);
+    return res.status(500).json({ error: "Signup failed" });
   }
 };

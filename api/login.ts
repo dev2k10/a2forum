@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import bcrypt from "bcryptjs";
-import { getPrisma } from "../lib/db";
+import { query } from "../lib/db";
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
@@ -9,20 +9,23 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ error: "Vui lòng nhập email và mật khẩu" });
+    return res.status(400).json({ error: "Missing credentials" });
   }
 
   try {
-    const prisma = await getPrisma();
-    const user = await prisma.user.findUnique({ where: { email } });
+    const result = await query(
+      "SELECT id, name, email, password, verified FROM users WHERE email = $1",
+      [email],
+    );
 
-    if (!user) {
-      return res.status(401).json({ error: "Email hoặc mật khẩu không đúng" });
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    const user = result.rows[0];
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      return res.status(401).json({ error: "Email hoặc mật khẩu không đúng" });
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
     return res.status(200).json({
@@ -35,7 +38,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       },
     });
   } catch (error: any) {
-    console.error("Login error:", error.message);
-    return res.status(500).json({ error: "Đăng nhập thất bại." });
+    console.error("Login:", error.message);
+    return res.status(500).json({ error: "Login failed" });
   }
 };
