@@ -1,50 +1,56 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { query } from "./_db";
+
+const globalPool = globalThis as any;
 
 export default async (req: VercelRequest, res: VercelResponse) => {
-  if (req.method !== "POST") {
+  if (req.method !== "POST")
     return res.status(405).json({ error: "Method not allowed" });
-  }
 
   const { name, email, password, dateOfBirth, code } = req.body;
-  if (!name || !email || !password || !code) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
+  if (!name || !email || !password || !code)
+    return res.status(400).json({ error: "Missing fields" });
 
   try {
-    const bcrypt = await import("bcryptjs");
-
-    const existing = await query("SELECT id FROM users WHERE email = $1", [
-      email,
-    ]);
-    if (existing.rows.length > 0) {
-      return res.status(409).json({ error: "Email exists" });
+    if (!globalPool._pool) {
+      const { Pool } = await import("pg");
+      globalPool._pool = new Pool({
+        connectionString:
+          process.env.DATABASE_URL ||
+          process.env.POSTGRES_URL_NON_POOLING ||
+          process.env.POSTGRES_URL,
+        ssl: { rejectUnauthorized: false },
+        max: 1,
+        connectionTimeoutMillis: 10000,
+      });
     }
 
-    const codes = await query(
+    const bcrypt = await import("bcryptjs");
+    const pool = globalPool._pool;
+
+    const existing = await pool.query("SELECT id FROM users WHERE email = $1", [
+      email,
+    ]);
+    if (existing.rows.length > 0)
+      return res.status(409).json({ error: "Email exists" });
+
+    const codes = await pool.query(
       "SELECT code, expires_at FROM verification_codes WHERE email = $1 AND used = FALSE ORDER BY created_at DESC LIMIT 1",
       [email],
     );
+    if (codes.rows.length === 0)
+      return res.status(400).json({ error: "No code" });
 
-    if (codes.rows.length === 0) {
-      return res.status(400).json({ error: "No verification code" });
-    }
-
-    const record = codes.rows[0];
-    if (record.code !== code) {
-      return res.status(400).json({ error: "Wrong code" });
-    }
-    if (new Date(record.expires_at) < new Date()) {
+    const rec = codes.rows[0];
+    if (rec.code !== code) return res.status(400).json({ error: "Wrong code" });
+    if (new Date(rec.expires_at) < new Date())
       return res.status(400).json({ error: "Code expired" });
-    }
 
     const hashed = await bcrypt.hash(password, 10);
-    await query(
-      "INSERT INTO users (name, email, password, date_of_birth, verified) VALUES ($1, $2, $3, $4, TRUE)",
+    await pool.query(
+      "INSERT INTO users (name, email, password, date_of_birth, verified) VALUES ($1,$2,$3,$4,TRUE)",
       [name, email, hashed, dateOfBirth || null],
     );
-
-    await query(
+    await pool.query(
       "UPDATE verification_codes SET used = TRUE WHERE email = $1 AND used = FALSE",
       [email],
     );
