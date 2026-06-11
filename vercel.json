@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "dist/**/*",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [{ "src": "/(.*)", "dest": "/$1" }]
+  "buildCommand": "vite build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/dien-dan", "destination": "/dien-dan.html" },
+    { "source": "/thong-bao", "destination": "/thong-bao.html" },
+    { "source": "/kien-thuc", "destination": "/kien-thuc.html" },
+    { "source": "/(.*)", "destination": "/$1" }
+  ]
 }
