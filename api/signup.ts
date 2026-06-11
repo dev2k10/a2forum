@@ -1,6 +1,4 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import bcrypt from "bcryptjs";
-import { query } from "../lib/db";
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
@@ -13,6 +11,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   try {
+    const [{ query }, bcrypt] = await Promise.all([
+      import("../lib/db"),
+      import("bcryptjs"),
+    ]);
+
     const existing = await query("SELECT id FROM users WHERE email = $1", [
       email,
     ]);
@@ -26,7 +29,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     );
 
     if (codes.rows.length === 0) {
-      return res.status(400).json({ error: "No verification code found" });
+      return res.status(400).json({ error: "No verification code" });
     }
 
     const record = codes.rows[0];

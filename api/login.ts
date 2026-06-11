@@ -1,6 +1,4 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import bcrypt from "bcryptjs";
-import { query } from "../lib/db";
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
@@ -13,6 +11,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   try {
+    const [{ query }, bcrypt] = await Promise.all([
+      import("../lib/db"),
+      import("bcryptjs"),
+    ]);
+
     const result = await query(
       "SELECT id, name, email, password, verified FROM users WHERE email = $1",
       [email],

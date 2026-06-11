@@ -1,16 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { query } from "../lib/db";
-import { Resend } from "resend";
-
-const resendKey = process.env.RESEND_API_KEY;
-const resend = resendKey ? new Resend(resendKey) : null;
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (!resend) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
     return res.status(500).json({ error: "Resend API key not configured" });
   }
 
@@ -20,6 +16,13 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   try {
+    const [{ query }, { Resend }] = await Promise.all([
+      import("../lib/db"),
+      import("resend"),
+    ]);
+
+    const resend = new Resend(key);
+
     await query(
       "UPDATE verification_codes SET used = TRUE WHERE email = $1 AND used = FALSE",
       [email],
