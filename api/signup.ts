@@ -46,8 +46,8 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       return res.status(400).json({ error: "Code expired" });
 
     const hashed = await bcrypt.hash(password, 10);
-    await pool.query(
-      "INSERT INTO users (name, email, password, date_of_birth, verified) VALUES ($1,$2,$3,$4,TRUE)",
+    const user = await pool.query(
+      "INSERT INTO users (name, email, password, date_of_birth, verified) VALUES ($1,$2,$3,$4,TRUE) RETURNING id, name, email",
       [name, email, hashed, dateOfBirth || null],
     );
     await pool.query(
@@ -55,7 +55,15 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       [email],
     );
 
-    return res.status(201).json({ success: true, message: "Signup OK" });
+    return res.status(201).json({
+      success: true,
+      message: "Signup OK",
+      user: {
+        id: user.rows[0].id,
+        name: user.rows[0].name,
+        email: user.rows[0].email,
+      },
+    });
   } catch (error: any) {
     console.error("Signup:", error.message);
     return res.status(500).json({ error: "Signup failed" });
