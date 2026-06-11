@@ -12,7 +12,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
   try {
     const [{ query }, bcrypt] = await Promise.all([
-      import("../lib/db"),
+      import("./_db"),
       import("bcryptjs"),
     ]);
 

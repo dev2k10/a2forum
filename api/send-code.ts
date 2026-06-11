@@ -17,7 +17,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
   try {
     const [{ query }, { Resend }] = await Promise.all([
-      import("../lib/db"),
+      import("./_db"),
       import("resend"),
     ]);
 
