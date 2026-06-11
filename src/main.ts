@@ -1,39 +1,95 @@
 import "./style.css";
 
-//#region LINKER
-
-document.querySelectorAll('a[href^="/"]').forEach((link) => {
-  link.addEventListener("click", (e) => {
-    e.preventDefault();
-
-    const url = link.getAttribute("href");
-    if (url) {
-      loadContent(url);
-    }
-  });
-});
-
-function loadContent(url: string) {
-  fetch(url)
-    .then((response) => {
-      if (!response.ok) throw new Error("Network response was not ok");
-      return response.text();
-    })
-    .then((html) => {
-      const mainElement = document.querySelector("main") as HTMLElement | null;
-      if (mainElement) {
-        mainElement.innerHTML = html;
-      }
-      history.pushState(null, "", url);
-    })
-    .catch((error) => {
-      console.error("Error loading content:", error);
-    });
+//#region ROUTER
+interface Route {
+  path: string;
+  title: string;
+  render: () => string;
 }
 
+const routes: Route[] = [
+  { path: "/", title: "Trang chủ", render: () => "" },
+  { path: "/thong-bao", title: "Thông báo", render: renderThongBao },
+  { path: "/dien-dan", title: "Diễn đàn", render: renderDienDan },
+  { path: "/kien-thuc", title: "Kiến thức", render: renderKienThuc },
+];
+
+function navigate(path: string) {
+  const route = routes.find((r) => r.path === path);
+  if (!route) return;
+
+  const main = document.querySelector("main");
+  if (main) main.innerHTML = route.render();
+
+  document.title = `${route.title} - A2 Forum`;
+  history.pushState({ path }, "", path);
+  closeMenu();
+}
+
+// Listen for clicks on [data-nav] elements
+document.addEventListener("click", (e) => {
+  const target = (e.target as HTMLElement).closest("[data-nav]");
+  if (target) {
+    e.preventDefault();
+    const path = target.getAttribute("data-nav");
+    if (path) navigate(path);
+  }
+});
+
+// Handle browser back/forward
+window.addEventListener("popstate", () => {
+  const route = routes.find((r) => r.path === location.pathname);
+  if (!route) return;
+
+  const main = document.querySelector("main");
+  if (main) main.innerHTML = route.render();
+  document.title = `${route.title} - A2 Forum`;
+});
+
+// Load initial route on page load
+const initialRoute = routes.find((r) => r.path === location.pathname);
+if (initialRoute) {
+  const main = document.querySelector("main");
+  if (main) main.innerHTML = initialRoute.render();
+  document.title = `${initialRoute.title} - A2 Forum`;
+}
 //#endregion
 
-//#region MENU (MOBILE)
+//#region PAGE RENDERERS
+function renderThongBao(): string {
+  return `
+    <div class="p-4">
+      <h1 class="text-2xl font-bold mb-4">Thông báo</h1>
+      <button onclick="handleButtonClick()" class="bg-accent text-white px-4 py-2 rounded cursor-pointer">OK</button>
+    </div>
+  `;
+}
+
+function renderDienDan(): string {
+  return `
+    <div class="p-4">
+      <h1 class="text-2xl font-bold mb-4">Diễn đàn</h1>
+      <p>Xin chào đã đến với diễn đàn</p>
+    </div>
+  `;
+}
+
+function renderKienThuc(): string {
+  return `
+    <div class="p-4">
+      <h1 class="text-2xl font-bold mb-4">Kiến thức</h1>
+      <p>Nội dung kiến thức sẽ được cập nhật sau.</p>
+    </div>
+  `;
+}
+//#endregion
+
+function handleButtonClick() {
+  alert("Button clicked!");
+}
+(window as any).handleButtonClick = handleButtonClick;
+
+//#region MOBILE
 const openBtn = document.getElementById("openMenu");
 const closeBtn = document.getElementById("closeMenu");
 const menuOverlay = document.getElementById("menuOverlay");
@@ -58,13 +114,3 @@ function closeMenu() {
   menuContent?.classList.remove("translate-y-0", "opacity-100");
 }
 //#endregion
-
-function handleButtonClick() {
-  alert("Button clicked!");
-}
-(window as any).handleButtonClick = handleButtonClick;
-
-window.addEventListener("popstate", () => {
-  const url = location.pathname;
-  loadContent(url);
-});
