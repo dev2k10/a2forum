@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import bcrypt from "bcryptjs";
-import { query } from "./db";
+import prisma from "./db";
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
@@ -14,19 +14,12 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   try {
-    // Find user
-    const users = await query(
-      "SELECT id, name, email, password, verified, date_of_birth FROM users WHERE email = $1",
-      [email],
-    );
+    const user = await prisma.user.findUnique({ where: { email } });
 
-    if (users.rows.length === 0) {
+    if (!user) {
       return res.status(401).json({ error: "Email hoặc mật khẩu không đúng" });
     }
 
-    const user = users.rows[0];
-
-    // Check password
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
       return res.status(401).json({ error: "Email hoặc mật khẩu không đúng" });

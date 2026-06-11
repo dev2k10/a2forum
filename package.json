@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "postinstall": "prisma generate",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -14,9 +15,10 @@
     "vite": "^8.0.16"
   },
   "dependencies": {
+    "@prisma/client": "^7.8.0",
     "@tailwindcss/vite": "^4.3.0",
     "bcryptjs": "^3.0.3",
-    "pg": "^8.21.0",
+    "prisma": "^7.8.0",
     "resend": "^6.12.4",
     "tailwindcss": "^4.3.0"
   }

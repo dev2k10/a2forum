@@ -1,11 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { Resend } from "resend";
-import { query } from "./db";
+import prisma from "./db";
 
 const resendApiKey = process.env.RESEND_API_KEY;
-if (!resendApiKey) {
-  console.error("RESEND_API_KEY environment variable is not set");
-}
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export default async (req: VercelRequest, res: VercelResponse) => {
@@ -15,8 +12,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
   if (!resend) {
     return res.status(500).json({
-      error:
-        "Resend API key chưa được cấu hình. Vui lòng set biến môi trường RESEND_API_KEY trên Vercel.",
+      error: "Resend API key chưa được cấu hình.",
     });
   }
 
@@ -27,22 +23,21 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
   try {
     // Invalidate old unused codes
-    await query(
-      "UPDATE verification_codes SET used = TRUE WHERE email = $1 AND used = FALSE",
-      [email],
-    );
+    await prisma.verificationCode.updateMany({
+      where: { email, used: false },
+      data: { used: true },
+    });
 
     // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    // Store code in DB
-    await query(
-      "INSERT INTO verification_codes (email, code, expires_at) VALUES ($1, $2, $3)",
-      [email, code, expiresAt],
-    );
+    // Store code
+    await prisma.verificationCode.create({
+      data: { email, code, expiresAt },
+    });
 
-    // Send email via Resend
+    // Send email
     await resend.emails.send({
       from: "A2 Forum <no-reply@a2forum.vercel.app>",
       to: email,
