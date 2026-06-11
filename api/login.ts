@@ -1,19 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import bcrypt from "bcryptjs";
-import sql from "./db";
+import { query } from "./db";
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  if (!sql) {
-    return res
-      .status(500)
-      .json({
-        error:
-          "Database chưa được kết nối. Vui lòng set biến môi trường DATABASE_URL trên Vercel.",
-      });
   }
 
   const { email, password } = req.body;
@@ -24,16 +15,16 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
   try {
     // Find user
-    const users = await sql`
-      SELECT id, name, email, password, verified, date_of_birth
-      FROM users WHERE email = ${email}
-    `;
+    const users = await query(
+      "SELECT id, name, email, password, verified, date_of_birth FROM users WHERE email = $1",
+      [email],
+    );
 
-    if (users.length === 0) {
+    if (users.rows.length === 0) {
       return res.status(401).json({ error: "Email hoặc mật khẩu không đúng" });
     }
 
-    const user = users[0];
+    const user = users.rows[0];
 
     // Check password
     const valid = await bcrypt.compare(password, user.password);
@@ -50,8 +41,8 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         verified: user.verified,
       },
     });
-  } catch (error) {
-    console.error("Login error:", error);
+  } catch (error: any) {
+    console.error("Login error:", error.message);
     return res
       .status(500)
       .json({ error: "Đăng nhập thất bại. Vui lòng thử lại sau." });

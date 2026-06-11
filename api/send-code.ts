@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { Resend } from "resend";
-import sql from "./db";
+import { query } from "./db";
 
 const resendApiKey = process.env.RESEND_API_KEY;
 if (!resendApiKey) {
@@ -14,21 +14,10 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   if (!resend) {
-    return res
-      .status(500)
-      .json({
-        error:
-          "Resend API key chưa được cấu hình. Vui lòng set biến môi trường RESEND_API_KEY trên Vercel.",
-      });
-  }
-
-  if (!sql) {
-    return res
-      .status(500)
-      .json({
-        error:
-          "Database chưa được kết nối. Vui lòng set biến môi trường DATABASE_URL trên Vercel.",
-      });
+    return res.status(500).json({
+      error:
+        "Resend API key chưa được cấu hình. Vui lòng set biến môi trường RESEND_API_KEY trên Vercel.",
+    });
   }
 
   const { email } = req.body;
@@ -37,21 +26,21 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   try {
-    // Invalidate old unused codes for this email
-    await sql`
-      UPDATE verification_codes SET used = TRUE
-      WHERE email = ${email} AND used = FALSE
-    `;
+    // Invalidate old unused codes
+    await query(
+      "UPDATE verification_codes SET used = TRUE WHERE email = $1 AND used = FALSE",
+      [email],
+    );
 
     // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Store code in DB
-    await sql`
-      INSERT INTO verification_codes (email, code, expires_at)
-      VALUES (${email}, ${code}, ${expiresAt})
-    `;
+    await query(
+      "INSERT INTO verification_codes (email, code, expires_at) VALUES ($1, $2, $3)",
+      [email, code, expiresAt],
+    );
 
     // Send email via Resend
     await resend.emails.send({
@@ -71,14 +60,12 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       `,
     });
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Mã xác nhận đã được gửi đến email của bạn",
-      });
-  } catch (error) {
-    console.error("Send code error:", error);
+    return res.status(200).json({
+      success: true,
+      message: "Mã xác nhận đã được gửi đến email của bạn",
+    });
+  } catch (error: any) {
+    console.error("Send code error:", error.message);
     return res
       .status(500)
       .json({ error: "Không thể gửi mã xác nhận. Vui lòng thử lại sau." });
