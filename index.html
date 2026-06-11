@@ -1,354 +1,334 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="icon" type="image/svg+xml" href="/favicon-32x32.png" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-            integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"
-        />
-        <title>A2 Forum - Diễn đàn học tập trực tuyến</title>
-    </head>
-    <body class="bg-light text-dark dark:bg-dark dark:text-light">
-        <div id="app">
-            <!-- Zalo & Messenger circles -->
-            <div class="fixed bottom-[5%] right-[2%] z-40">
-                <div
-                    class="flex justify-center items-center bg-accent/20 rounded-full w-15 h-15 m-1"
-                >
-                    <a href="https://www.zalo.me/0395808431" target="_blank">
-                        <img class="w-10 h-10" src="zalo.png" alt="" />
-                    </a>
-                </div>
-                <div
-                    class="flex justify-center items-center bg-accent/20 rounded-full w-15 h-15 m-1"
-                >
-                    <a href="https://www.m.me/dev2k10" target="_blank">
-                        <img class="w-8 h-8" src="messenger.webp" alt="" />
-                    </a>
-                </div>
-            </div>
-
-            <!-- OVERLAY (dùng chung cho menu & account popup) -->
-            <div
-                id="menuOverlay"
-                class="fixed font-display inset-0 bg-black/80 opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out z-50"
-            ></div>
-
-            <!-- MOBILE MENU -->
-            <div
-                class="hidden fixed left-0 right-0 bottom-0 bg-light dark:bg-dark border-t z-50"
-                id="menuContent"
-            >
-                <div class="flex justify-between p-4">
-                    <div class="text-2xl">Góc học tập</div>
-                    <button id="closeMenu" class="hover:text-accent">
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </button>
-                </div>
-
-                <ul class="flex flex-col gap-y-8 px-4 py-6">
-                    <li
-                        class="p-1 transition duration-200 ease-in-out border-b border-b-dark/10 dark:border-b-light/10 hover:text-accent hover:border-b-accent"
-                    >
-                        <button
-                            data-nav="/thong-bao"
-                            class="block w-full text-left cursor-pointer"
-                        >
-                            Thông báo
-                        </button>
-                    </li>
-                    <li
-                        class="p-1 transition duration-200 ease-in-out border-b border-b-dark/10 dark:border-b-light/10 hover:text-accent hover:border-b-accent"
-                    >
-                        <button
-                            data-nav="/dien-dan"
-                            class="block w-full text-left cursor-pointer"
-                        >
-                            Diễn đàn
-                        </button>
-                    </li>
-                    <li
-                        class="p-1 transition duration-200 ease-in-out border-b border-b-dark/10 dark:border-b-light/10 hover:text-accent hover:border-b-accent"
-                    >
-                        <button
-                            data-nav="/kien-thuc"
-                            class="block w-full text-left cursor-pointer"
-                        >
-                            Kiến thức
-                        </button>
-                    </li>
-                </ul>
-                <div class="absolute bottom-1 right-1 h-10 pr-4">
-                    <a
-                        class="hover:text-blue-600 text-2xl"
-                        target="_blank"
-                        href="https://www.fb.com/doantruongthptnguyentatthanh"
-                    >
-                        <i class="fa-brands fa-facebook"></i>
-                    </a>
-                    <a
-                        class="hover:text-red-600 text-2xl"
-                        target="_blank"
-                        href="mailto:lktin.dev@gmail.com"
-                    >
-                        <i class="fa-solid fa-envelope"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- ACCOUNT POPUP -->
-            <div
-                class="hidden fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-light dark:bg-dark border sm:w-md w-full max-h-[80vh] overflow-y-auto z-50 rounded-lg p-6"
-                id="accountContent"
-            >
-                <!-- Header -->
-                <div class="flex justify-between items-center mb-6">
-                    <div class="text-2xl font-bold" id="accountTitle">
-                        Đăng ký
-                    </div>
-                    <button id="closeAccount" class="hover:text-accent text-xl">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-
-                <!-- Tabs -->
-                <div
-                    class="flex border-b border-dark/10 dark:border-light/10 mb-6"
-                >
-                    <button
-                        id="tabSignUp"
-                        class="tab-btn flex-1 pb-2 text-center border-b-2 border-accent font-semibold"
-                    >
-                        Đăng ký
-                    </button>
-                    <button
-                        id="tabLogIn"
-                        class="tab-btn flex-1 pb-2 text-center border-b-2 border-transparent text-dark/50 dark:text-light/50"
-                    >
-                        Đăng nhập
-                    </button>
-                </div>
-
-                <!-- Sign Up Form -->
-                <div id="signUpForm" class="flex flex-col gap-4">
-                    <div>
-                        <label class="block text-sm mb-1">Họ và tên</label>
-                        <input
-                            id="signupName"
-                            type="text"
-                            placeholder="Nguyễn Văn A"
-                            class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
-                        />
-                    </div>
-
-                    <div>
-                        <label class="block text-sm mb-1">Email</label>
-                        <div class="flex gap-2">
-                            <input
-                                id="signupEmail"
-                                type="email"
-                                placeholder="example@email.com"
-                                class="flex-1 border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
-                            />
-                            <button
-                                id="sendCodeBtn"
-                                class="bg-accent text-white rounded px-4 py-2 text-sm font-semibold hover:bg-accent/90 cursor-pointer whitespace-nowrap"
-                            >
-                                Gửi mã
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="codeSection" class="hidden">
-                        <label class="block text-sm mb-1">Mã xác nhận</label>
-                        <p class="text-xs text-dark/50 dark:text-light/50 mb-2">
-                            Mã đã được gửi đến email của bạn. Vui lòng kiểm tra
-                            và nhập mã.
-                        </p>
-                        <input
-                            id="signupCode"
-                            type="text"
-                            maxlength="6"
-                            placeholder="••••••"
-                            class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent text-center text-xl tracking-[8px]"
-                        />
-                    </div>
-
-                    <div>
-                        <label class="block text-sm mb-1">Mật khẩu</label>
-                        <input
-                            id="signupPassword"
-                            type="password"
-                            placeholder="••••••••"
-                            class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1"
-                            >Nhập lại mật khẩu</label
-                        >
-                        <input
-                            id="signupRePassword"
-                            type="password"
-                            placeholder="••••••••"
-                            class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1">Ngày sinh</label>
-                        <input
-                            id="signupDob"
-                            type="date"
-                            class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
-                        />
-                    </div>
-
-                    <div id="signupStatus" class="hidden text-sm"></div>
-
-                    <button
-                        id="signupSubmit"
-                        class="bg-accent text-white rounded py-2 mt-2 font-semibold hover:bg-accent/90 cursor-pointer"
-                    >
-                        Đăng ký
-                    </button>
-                </div>
-
-                <!-- Login Form -->
-                <div id="logInForm" class="hidden flex flex-col gap-4">
-                    <div>
-                        <label class="block text-sm mb-1">Email</label>
-                        <input
-                            id="loginEmail"
-                            type="email"
-                            placeholder="example@email.com"
-                            class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1">Mật khẩu</label>
-                        <input
-                            id="loginPassword"
-                            type="password"
-                            placeholder="••••••••"
-                            class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
-                        />
-                    </div>
-
-                    <div id="loginStatus" class="hidden text-sm"></div>
-
-                    <button
-                        id="loginSubmit"
-                        class="bg-accent text-white rounded py-2 mt-2 font-semibold hover:bg-accent/90 cursor-pointer"
-                    >
-                        Đăng nhập
-                    </button>
-                </div>
-
-                <!-- Account Panel (khi đã đăng nhập) -->
-                <div
-                    id="accountPanel"
-                    class="hidden flex flex-col gap-4 items-center"
-                >
-                    <div
-                        class="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center text-4xl"
-                    >
-                        <i class="fa-solid fa-user text-accent"></i>
-                    </div>
-                    <div class="text-xl font-semibold" id="accountName">
-                        Nguyễn Văn A
-                    </div>
-                    <div
-                        class="text-sm text-dark/50 dark:text-light/50"
-                        id="accountEmail"
-                    >
-                        example@email.com
-                    </div>
-                    <button
-                        id="logoutBtn"
-                        class="bg-red-500 text-white rounded py-2 px-6 mt-4 hover:bg-red-600 cursor-pointer"
-                    >
-                        Đăng xuất
-                    </button>
-                </div>
-            </div>
-
-            <!-- NAV -->
-            <nav class="font-display border-b">
-                <div
-                    class="flex items-center justify-between lg:justify-around m-5"
-                >
-                    <div id="openMenu" class="lg:hidden cursor-pointer">
-                        <i class="fa-solid fa-bars"></i>
-                    </div>
-                    <div class="">
-                        <span
-                            class="bg-linear-65 from-accent/80 to-accent/40 font-black rounded-md py-1 px-2"
-                            >A2</span
-                        >
-                        Forum
-                    </div>
-                    <ul class="hidden lg:flex gap-x-4">
-                        <li
-                            class="p-1 transition duration-200 ease-in-out hover:text-accent"
-                        >
-                            <button
-                                data-nav="/thong-bao"
-                                class="cursor-pointer"
-                            >
-                                Thông báo
-                            </button>
-                        </li>
-                        <li
-                            class="p-1 transition duration-200 ease-in-out hover:text-accent"
-                        >
-                            <button data-nav="/dien-dan" class="cursor-pointer">
-                                Diễn đàn
-                            </button>
-                        </li>
-                        <li
-                            class="p-1 transition duration-200 ease-in-out hover:text-accent"
-                        >
-                            <button
-                                data-nav="/kien-thuc"
-                                class="cursor-pointer"
-                            >
-                                Kiến thức
-                            </button>
-                        </li>
-                    </ul>
-                    <div class="flex items-center gap-x-2">
-                        <a
-                            class="hidden lg:block hover:text-blue-600"
-                            target="_blank"
-                            href="https://www.fb.com/doantruongthptnguyentatthanh"
-                        >
-                            <i class="fa-brands fa-facebook"></i>
-                        </a>
-                        <a
-                            class="hidden lg:block hover:text-red-600"
-                            target="_blank"
-                            href="mailto:lktin.dev@gmail.com"
-                        >
-                            <i class="fa-solid fa-envelope"></i>
-                        </a>
-                        <div
-                            class="flex justify-center items-center bg-accent hover:bg-accent/80 rounded-full w-8 h-8 cursor-pointer"
-                            id="accountBtn"
-                        >
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
-            <main></main>
-            <footer></footer>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon-32x32.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <title>A2 Forum - Diễn đàn học tập trực tuyến</title>
+  </head>
+  <body class="bg-light text-dark dark:bg-dark dark:text-light">
+    <div id="app">
+      <!-- Zalo & Messenger circles -->
+      <div class="fixed bottom-[5%] right-[2%] z-40">
+        <div
+          class="flex justify-center items-center bg-accent/20 rounded-full w-15 h-15 m-1"
+        >
+          <a href="https://www.zalo.me/0395808431" target="_blank">
+            <img class="w-10 h-10" src="zalo.png" alt="" />
+          </a>
         </div>
-        <script type="module" src="/src/main.ts"></script>
-    </body>
+        <div
+          class="flex justify-center items-center bg-accent/20 rounded-full w-15 h-15 m-1"
+        >
+          <a href="https://www.m.me/dev2k10" target="_blank">
+            <img class="w-8 h-8" src="messenger.webp" alt="" />
+          </a>
+        </div>
+      </div>
+
+      <!-- OVERLAY (dùng chung cho menu & account popup) -->
+      <div
+        id="menuOverlay"
+        class="fixed font-display inset-0 bg-black/80 opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out z-50"
+      ></div>
+
+      <!-- MOBILE MENU -->
+      <div
+        class="hidden fixed font-display left-0 right-0 bottom-0 bg-light dark:bg-dark border-t z-50"
+        id="menuContent"
+      >
+        <div class="flex justify-between p-4">
+          <div class="text-2xl">Góc học tập</div>
+          <button id="closeMenu" class="hover:text-accent">
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+        </div>
+
+        <ul class="flex flex-col gap-y-8 px-4 py-6">
+          <li
+            class="p-1 transition duration-200 ease-in-out border-b border-b-dark/10 dark:border-b-light/10 hover:text-accent hover:border-b-accent"
+          >
+            <button
+              data-nav="/thong-bao"
+              class="block w-full text-left cursor-pointer"
+            >
+              Thông báo
+            </button>
+          </li>
+          <li
+            class="p-1 transition duration-200 ease-in-out border-b border-b-dark/10 dark:border-b-light/10 hover:text-accent hover:border-b-accent"
+          >
+            <button
+              data-nav="/dien-dan"
+              class="block w-full text-left cursor-pointer"
+            >
+              Diễn đàn
+            </button>
+          </li>
+          <li
+            class="p-1 transition duration-200 ease-in-out border-b border-b-dark/10 dark:border-b-light/10 hover:text-accent hover:border-b-accent"
+          >
+            <button
+              data-nav="/kien-thuc"
+              class="block w-full text-left cursor-pointer"
+            >
+              Kiến thức
+            </button>
+          </li>
+        </ul>
+        <div class="absolute bottom-1 right-1 h-10 pr-4">
+          <a
+            class="hover:text-blue-600 text-2xl"
+            target="_blank"
+            href="https://www.fb.com/doantruongthptnguyentatthanh"
+          >
+            <i class="fa-brands fa-facebook"></i>
+          </a>
+          <a
+            class="hover:text-red-600 text-2xl"
+            target="_blank"
+            href="mailto:lktin.dev@gmail.com"
+          >
+            <i class="fa-solid fa-envelope"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- ACCOUNT POPUP -->
+      <div
+        class="hidden fixed font-display left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-light dark:bg-dark border sm:w-md w-full max-h-[88vh] overflow-y-auto z-50 p-6"
+        id="accountContent"
+      >
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+          <div class="text-2xl font-bold" id="accountTitle">Đăng ký</div>
+          <button id="closeAccount" class="hover:text-accent text-xl">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex border-b border-dark/10 dark:border-light/10 mb-6">
+          <button
+            id="tabSignUp"
+            class="tab-btn flex-1 pb-2 text-center border-b-2 border-accent font-semibold"
+          >
+            Đăng ký
+          </button>
+          <button
+            id="tabLogIn"
+            class="tab-btn flex-1 pb-2 text-center border-b-2 border-transparent text-dark/50 dark:text-light/50"
+          >
+            Đăng nhập
+          </button>
+        </div>
+
+        <!-- Sign Up Form -->
+        <div id="signUpForm" class="flex flex-col gap-4">
+          <div>
+            <label class="block text-sm mb-1">Họ và tên</label>
+            <input
+              id="signupName"
+              type="text"
+              placeholder="Nguyễn Văn A"
+              class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm mb-1">Email</label>
+            <div class="flex gap-2">
+              <input
+                id="signupEmail"
+                type="email"
+                placeholder="example@email.com"
+                class="flex-1 border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
+              />
+              <button
+                id="sendCodeBtn"
+                class="bg-accent text-white rounded px-4 py-2 text-sm font-semibold hover:bg-accent/90 cursor-pointer whitespace-nowrap"
+              >
+                Gửi mã
+              </button>
+            </div>
+          </div>
+
+          <div id="codeSection" class="hidden">
+            <label class="block text-sm mb-1">Mã xác nhận</label>
+            <p class="text-xs text-dark/50 dark:text-light/50 mb-2">
+              Mã đã được gửi đến email của bạn. Vui lòng kiểm tra và nhập mã.
+            </p>
+            <input
+              id="signupCode"
+              type="text"
+              maxlength="6"
+              placeholder="••••••"
+              class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent text-center text-xl tracking-[8px]"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm mb-1">Mật khẩu</label>
+            <input
+              id="signupPassword"
+              type="password"
+              placeholder="••••••••"
+              class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
+            />
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Nhập lại mật khẩu</label>
+            <input
+              id="signupRePassword"
+              type="password"
+              placeholder="••••••••"
+              class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
+            />
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Ngày sinh</label>
+            <input
+              id="signupDob"
+              type="date"
+              class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
+            />
+          </div>
+
+          <div id="signupStatus" class="hidden text-sm"></div>
+
+          <button
+            id="signupSubmit"
+            class="bg-accent text-white rounded py-2 mt-2 font-semibold hover:bg-accent/90 cursor-pointer"
+          >
+            Đăng ký
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="logInForm" class="hidden flex flex-col gap-4">
+          <div>
+            <label class="block text-sm mb-1">Email</label>
+            <input
+              id="loginEmail"
+              type="email"
+              placeholder="example@email.com"
+              class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
+            />
+          </div>
+          <div>
+            <label class="block text-sm mb-1">Mật khẩu</label>
+            <input
+              id="loginPassword"
+              type="password"
+              placeholder="••••••••"
+              class="w-full border border-dark/20 dark:border-light/20 rounded px-3 py-2 bg-transparent focus:outline-none focus:border-accent"
+            />
+          </div>
+
+          <div id="loginStatus" class="hidden text-sm"></div>
+
+          <button
+            id="loginSubmit"
+            class="bg-accent text-white rounded py-2 mt-2 font-semibold hover:bg-accent/90 cursor-pointer"
+          >
+            Đăng nhập
+          </button>
+        </div>
+
+        <!-- Account Panel (khi đã đăng nhập) -->
+        <div id="accountPanel" class="hidden flex flex-col gap-4 items-center">
+          <div
+            class="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center text-4xl"
+          >
+            <i class="fa-solid fa-user text-accent"></i>
+          </div>
+          <div class="text-xl font-semibold" id="accountName">Nguyễn Văn A</div>
+          <div
+            class="text-sm text-dark/50 dark:text-light/50"
+            id="accountEmail"
+          >
+            example@email.com
+          </div>
+          <button
+            id="logoutBtn"
+            class="bg-red-500 text-white rounded py-2 px-6 mt-4 hover:bg-red-600 cursor-pointer"
+          >
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+
+      <!-- NAV -->
+      <nav class="font-display border-b">
+        <div class="flex items-center justify-between lg:justify-around m-5">
+          <div id="openMenu" class="lg:hidden cursor-pointer">
+            <i class="fa-solid fa-bars"></i>
+          </div>
+          <div class="">
+            <span
+              class="bg-linear-65 from-accent/80 to-accent/40 font-black rounded-md py-1 px-2"
+              >A2</span
+            >
+            Forum
+          </div>
+          <ul class="hidden lg:flex gap-x-4">
+            <li
+              class="p-1 transition duration-200 ease-in-out hover:text-accent"
+            >
+              <button data-nav="/thong-bao" class="cursor-pointer">
+                Thông báo
+              </button>
+            </li>
+            <li
+              class="p-1 transition duration-200 ease-in-out hover:text-accent"
+            >
+              <button data-nav="/dien-dan" class="cursor-pointer">
+                Diễn đàn
+              </button>
+            </li>
+            <li
+              class="p-1 transition duration-200 ease-in-out hover:text-accent"
+            >
+              <button data-nav="/kien-thuc" class="cursor-pointer">
+                Kiến thức
+              </button>
+            </li>
+          </ul>
+          <div class="flex items-center gap-x-2">
+            <a
+              class="hidden lg:block hover:text-blue-600"
+              target="_blank"
+              href="https://www.fb.com/doantruongthptnguyentatthanh"
+            >
+              <i class="fa-brands fa-facebook"></i>
+            </a>
+            <a
+              class="hidden lg:block hover:text-red-600"
+              target="_blank"
+              href="mailto:lktin.dev@gmail.com"
+            >
+              <i class="fa-solid fa-envelope"></i>
+            </a>
+            <div
+              class="flex justify-center items-center bg-accent hover:bg-accent/80 rounded-full w-8 h-8 cursor-pointer"
+              id="accountBtn"
+            >
+              <i class="fa-solid fa-user"></i>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main></main>
+      <footer></footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
