@@ -1,19 +1,31 @@
 import postgres from "postgres";
 
-const DATABASE_URL = process.env.DATABASE_URL;
+function getDb() {
+  const DATABASE_URL = process.env.DATABASE_URL;
 
-if (!DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL environment variable is not set. " +
-      "Please set it in Vercel dashboard or create a .env file.",
-  );
+  if (!DATABASE_URL) {
+    console.error("DATABASE_URL environment variable is not set");
+    return null;
+  }
+
+  try {
+    const sql = postgres(DATABASE_URL, {
+      ssl: { rejectUnauthorized: false },
+    });
+
+    // Init tables in background (don't block the first request)
+    initTables(sql).catch((err) =>
+      console.error("DB init error:", err.message),
+    );
+
+    return sql;
+  } catch (err: any) {
+    console.error("DB connection error:", err.message);
+    return null;
+  }
 }
 
-const sql = postgres(DATABASE_URL, {
-  ssl: { rejectUnauthorized: false },
-});
-
-async function initDB() {
+async function initTables(sql: any) {
   await sql`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -40,6 +52,5 @@ async function initDB() {
   console.log("Database tables initialized");
 }
 
-initDB().catch((err) => console.error("Database init error:", err));
-
+const sql = getDb();
 export default sql;

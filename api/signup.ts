@@ -7,11 +7,21 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  if (!sql) {
+    return res
+      .status(500)
+      .json({
+        error:
+          "Database chưa được kết nối. Vui lòng set biến môi trường DATABASE_URL trên Vercel.",
+      });
+  }
+
   const { name, email, password, dateOfBirth, code } = req.body;
 
   if (!name || !email || !password || !code) {
     return res.status(400).json({
-      error: "Vui lòng điền đầy đủ thông tin: họ tên, email, mật khẩu và mã xác nhận",
+      error:
+        "Vui lòng điền đầy đủ thông tin: họ tên, email, mật khẩu và mã xác nhận",
     });
   }
 
@@ -78,6 +88,8 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     });
   } catch (error) {
     console.error("Signup error:", error);
-    return res.status(500).json({ error: "Đăng ký thất bại. Vui lòng thử lại sau." });
+    return res
+      .status(500)
+      .json({ error: "Đăng ký thất bại. Vui lòng thử lại sau." });
   }
 };

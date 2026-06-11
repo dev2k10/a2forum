@@ -2,11 +2,33 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { Resend } from "resend";
 import sql from "./db";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+const resendApiKey = process.env.RESEND_API_KEY;
+if (!resendApiKey) {
+  console.error("RESEND_API_KEY environment variable is not set");
+}
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  if (!resend) {
+    return res
+      .status(500)
+      .json({
+        error:
+          "Resend API key chưa được cấu hình. Vui lòng set biến môi trường RESEND_API_KEY trên Vercel.",
+      });
+  }
+
+  if (!sql) {
+    return res
+      .status(500)
+      .json({
+        error:
+          "Database chưa được kết nối. Vui lòng set biến môi trường DATABASE_URL trên Vercel.",
+      });
   }
 
   const { email } = req.body;
@@ -49,9 +71,16 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       `,
     });
 
-    return res.status(200).json({ success: true, message: "Mã xác nhận đã được gửi đến email của bạn" });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Mã xác nhận đã được gửi đến email của bạn",
+      });
   } catch (error) {
     console.error("Send code error:", error);
-    return res.status(500).json({ error: "Không thể gửi mã xác nhận. Vui lòng thử lại sau." });
+    return res
+      .status(500)
+      .json({ error: "Không thể gửi mã xác nhận. Vui lòng thử lại sau." });
   }
 };
