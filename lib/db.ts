@@ -1,21 +1,20 @@
-const globalForPrisma = globalThis as unknown as { prisma: any };
+import { Pool } from "pg";
 
-export async function getPrisma() {
-  if (globalForPrisma.prisma) return globalForPrisma.prisma;
+const globalForPool = globalThis as unknown as { pool: Pool };
 
-  const { PrismaClient } = await import("@prisma/client");
-  const { PrismaPg } = await import("@prisma/adapter-pg");
+const url =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL_NON_POOLING ||
+  process.env.POSTGRES_URL;
 
-  const url =
-    process.env.DATABASE_URL ||
-    process.env.POSTGRES_URL_NON_POOLING ||
-    process.env.POSTGRES_URL;
-
-  const adapter = new PrismaPg({ connectionString: url });
-  const client = new PrismaClient({ adapter, log: ["error"] });
-
-  globalForPrisma.prisma = client;
-  return client;
+export async function query(text: string, params?: any[]) {
+  if (!globalForPool.pool) {
+    globalForPool.pool = new Pool({
+      connectionString: url,
+      ssl: { rejectUnauthorized: false },
+      max: 1,
+      connectionTimeoutMillis: 5000,
+    });
+  }
+  return globalForPool.pool.query(text, params);
 }
-
-export default async () => getPrisma();
