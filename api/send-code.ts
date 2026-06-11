@@ -44,7 +44,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     );
 
     await resend.emails.send({
-      from: "A2 Forum <no-reply@a2forum.vercel.app>",
+      from: "A2 Forum <onboarding@resend.dev>",
       to: email,
       subject: "Mã xác nhận A2 Forum",
       html: `<div>Mã: <b>${code}</b></div>`,
